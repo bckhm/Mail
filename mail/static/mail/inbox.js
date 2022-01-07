@@ -16,7 +16,7 @@ function compose_email() {
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
   document.querySelector('#compose-view').style.display = 'block';
-    document.querySelector('#email-view').style.display = 'none';
+  document.querySelector('#email-view').style.display = 'none';
 
   // Clear out composition fields
   document.querySelector('#compose-recipients').value = '';
@@ -78,6 +78,15 @@ function load_email(id) {
       .then(email => {
         console.log(email);
 
+        // Archive/ Unarchive button
+        let button = document.createElement('button');
+        if (email['archived'] === false) {
+            button.innerHTML = 'Archive Email';
+        } else {
+            button.innerHTML = 'Unarchive Email';
+        }
+        button.addEventListener('click', () => archive(`${email.id}`));
+
         // Obtain information from API and put them into #email-view
         const message = document.querySelector('#email-view');
         message.style.padding = '10px';
@@ -86,7 +95,8 @@ function load_email(id) {
         message.innerHTML = `<b>From</b>: ${email.sender}<br>
                          <b>To</b>: ${email.recipients}<br>
                          <b>Subject</b>: ${email.subject}<br><i>${email.timestamp}</i><hr>
-                         ${email.body}`;
+                         ${email.body}$<br>`;
+        message.append(button);
       })
       .catch(error => {
         console.log('Error', error);
@@ -134,4 +144,24 @@ function send_email(event) {
       .catch(error => {
         console.log('Error', error);
       });
+}
+
+// Archive/Unarchive emails depending on current status
+function archive(id) {
+    let archived = true;
+    fetch(`/emails/${id}`)
+        .then(response => response.json())
+        .then(email => {
+            if (email.archived === true) {
+                archived = false;
+            } else {
+                archived = true;
+            }
+        });
+    fetch(`/emails/${id}`, {
+        method: 'PUT',
+        body: JSON.stringify({
+            archived: archived
+        })
+    });
 }
