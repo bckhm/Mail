@@ -11,7 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
   load_mailbox('inbox');
 });
 
-function compose_email() {
+function compose_email(nothing = '', subj = '', recipient='', body='') {
 
   // Show compose view and hide other views
   document.querySelector('#emails-view').style.display = 'none';
@@ -19,9 +19,10 @@ function compose_email() {
   document.querySelector('#email-view').style.display = 'none';
 
   // Clear out composition fields
-  document.querySelector('#compose-recipients').value = '';
-  document.querySelector('#compose-subject').value = '';
-  document.querySelector('#compose-body').value = '';
+  document.querySelector('#compose-recipients').value = recipient;
+  document.querySelector('#compose-subject').value = subj;
+
+  document.querySelector('#compose-body').value = body;
 }
 
 function load_mailbox(mailbox) {
@@ -48,16 +49,17 @@ function load_mailbox(mailbox) {
           div.style.padding = '10px';
           div.style.margin = '5px';
           div.style.borderRadius = '15px';
+          div.style.border = 'solid black 1px';
 
           // Set Div background color depending on read/unread
           if (email['read'] === true) {
             div.style.backgroundColor = 'lightgray';
           } else {
             div.style.backgroundColor = 'white';
-          };
+          }
 
           // Modify div contents, and apply event listener to the divs
-          div.innerHTML = `<h4>${email.subject}</h4>From: ${email.sender}<br>${email.timestamp}`;
+          div.innerHTML = `<b>${email.subject}</b> ${email.sender}<br>${email.timestamp}`;
           div.addEventListener('click', () => load_email(email['id']));
           // Add to emails-view containers
           document.querySelector('#emails-view').append(div);
@@ -78,14 +80,28 @@ function load_email(id) {
       .then(email => {
         console.log(email);
 
+        // Reply Button
+        let reply = document.createElement('button');
+        reply.innerHTML = 'Reply';
+
+        // Checks if subject already contains 'Re:'
+        if (email['subject'].includes('Re:') === true) {
+            reply.addEventListener('click', () => compose_email('', `${email['subject']}`, `${email.sender}`, `${email.body}`));
+        } else {
+            reply.addEventListener('click', () => compose_email('', `Re: ${email['subject']}`, `${email.sender}`, `On ${email.timestamp}, ${email.sender} wrote: ${email.body}`));
+        }
+
         // Archive/ Unarchive button
         let button = document.createElement('button');
         if (email['archived'] === false) {
             button.innerHTML = 'Archive Email';
+            button.addEventListener('click', () => archive(`${email.id}`, true));
+
         } else {
             button.innerHTML = 'Unarchive Email';
+            button.addEventListener('click', () => archive(`${email.id}`, false));
         }
-        button.addEventListener('click', () => archive(`${email.id}`));
+
 
         // Obtain information from API and put them into #email-view
         const message = document.querySelector('#email-view');
@@ -95,7 +111,8 @@ function load_email(id) {
         message.innerHTML = `<b>From</b>: ${email.sender}<br>
                          <b>To</b>: ${email.recipients}<br>
                          <b>Subject</b>: ${email.subject}<br><i>${email.timestamp}</i><hr>
-                         ${email.body}$<br>`;
+                         ${email.body}<br>`;
+        message.append(reply);
         message.append(button);
       })
       .catch(error => {
@@ -106,7 +123,7 @@ function load_email(id) {
   fetch(`/emails/${id}`, {
       method: 'PUT',
       body: JSON.stringify({
-          read: true
+      read: true
       })
   });
 
@@ -147,21 +164,17 @@ function send_email(event) {
 }
 
 // Archive/Unarchive emails depending on current status
-function archive(id) {
-    let archived = true;
-    fetch(`/emails/${id}`)
-        .then(response => response.json())
-        .then(email => {
-            if (email.archived === true) {
-                archived = false;
-            } else {
-                archived = true;
-            }
-        });
+function archive(id, archived) {
+
     fetch(`/emails/${id}`, {
         method: 'PUT',
         body: JSON.stringify({
             archived: archived
         })
-    });
+    })
+        .then(response => load_mailbox('inbox'));
 }
+
+
+
+
