@@ -8,12 +8,24 @@ Web Application that simulates an entire email system. made using Django, HTMl, 
 
 
 ## Simple step-by-step tutorial
-![instructions](Instructions.png)
 1. In terminal, run the app by typing 'python3 manage.py runserver'
 2. Click on the local link generated in the terminal
 3. Create an email account e.g. 'me@hello.com'
-4. Send emails to anyone that has signed up in the same 
+4. Send emails to anyone that has signed up!
+
+## Features
+![inbox](inbox.png)
+1. Mailboxes
+    • Inbox  
+    • Sent
+    • Archived
+   
+![compose](compose.png)
+2. Composing new mail
+
+![archive](archive.png)
+3. Archiving & Replying
 
 
 ## Credits
-All credits due to the Harvard CS50 team for their work on the game files
+CS50 team
