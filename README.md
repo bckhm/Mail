@@ -20,10 +20,12 @@ Web Application that simulates an entire email system. made using Django, HTMl, 
     • Sent
     • Archived
    
+   
 ![compose](compose.png)
 2. Composing new mail
 
 ![archive](archive.png)
+
 3. Archiving & Replying
 
 
